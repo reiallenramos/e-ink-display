@@ -12,8 +12,9 @@ Both files should be in the same folder as this script.
 
 import os
 import logging
+import time
 from PIL import Image
-import epd2in13
+import epd2in13_V4
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,25 +34,24 @@ def flash_image():
         logging.info(f"Flashing {image_path} to e-ink display...")
         
         # Initialize display
-        epd = epd2in13.EPD()
+        epd = epd2in13_V4.EPD()
         logging.info("Initializing display...")
-        epd.init(epd.lut_full_update)
+        epd.init()
         epd.Clear(0xFF)
         
         # Load and display image
         logging.info("Loading image...")
+        epd.init()
+        image = Image.new('1', (epd.height, epd.width), 255) # 255: clear the frame
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        image_path = os.path.join(current_dir, image_path)
+        logging.info(image_path)
         image = Image.open(image_path)
-        
-        # Verify image dimensions
-        if image.size != (250, 122):
-            logging.warning(f"Image size is {image.size}, expected (250, 122)")
-            logging.info("Resizing image...")
-            image = image.resize((250, 122))
-        
+
         # Convert to 1-bit if needed
-        if image.mode != '1':
-            logging.info("Converting image to 1-bit mode...")
-            image = image.convert('1')
+        # if image.mode != '1':
+        #     logging.info("Converting image to 1-bit mode...")
+        #     image = image.convert('1')
         
         # Display the image
         logging.info("Displaying image on e-ink screen...")
@@ -61,7 +61,7 @@ def flash_image():
         
         # Put display to sleep to save power
         logging.info("Putting display to sleep...")
-        epd.sleep()
+        time.sleep(1)
         
         return True
         
